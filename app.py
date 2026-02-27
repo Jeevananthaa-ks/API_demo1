@@ -2,9 +2,11 @@ from flask import Flask, jsonify,request
 
 app=Flask("__name__")
 
-@app.route("/")
-def hello():
-    return "INTRODUCTION"
+@app.route("/health")
+def heathcheck():
+    return jsonify({
+        "status":"healthy"
+    })
 
 @app.route("/NAME",methods=['POST'])
 def dem():
