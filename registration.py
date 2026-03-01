@@ -13,19 +13,26 @@ def healthcheck():
     return {"status": "success"}
 
 
-# ---------------- SIGNUP API ----------------
-@app.route('/signup', methods=['POST','GET'])
+
+@app.route('/signup', methods=['POST', 'GET'])
 def signup():
 
-    data = request.get_json()  
+    if request.method == 'GET':
+        return jsonify({"message": "Please use a POST request with user data to sign up."}), 200
+
+  
+    data = request.get_json(silent=True) or request.form
 
     if not data:
-        return jsonify({"message": "No JSON data provided"}), 400
+        return jsonify({"message": "No data provided"}), 400
 
     email = data.get("email")
     password = data.get("password")
     fname = data.get("fname")
     lname = data.get("lname")
+
+    if not email or not password:
+        return jsonify({"message": "Email and Password are required"}), 400
 
     if users.find_one({"email": email}):
         return jsonify({"message": "Email already exists"}), 400
@@ -43,14 +50,20 @@ def signup():
     }), 201
 
 
-# ---------------- LOGIN API ----------------
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
+ 
+    if request.method == 'GET':
+        return jsonify({
+            "message": "Browser GET request detected. Use Postman (POST) to login.",
+            "status": "waiting_for_data"
+        }), 200
 
-    data = request.get_json()
+
+    data = request.get_json(silent=True) or request.form
 
     if not data:
-        return jsonify({"message": "No JSON data provided"}), 400
+        return jsonify({"message": "No data provided"}), 400
 
     email = data.get("email")
     password = data.get("password")
@@ -59,7 +72,7 @@ def login():
 
     if not user:
         return jsonify({"message": "Invalid email or password"}), 401
-
+    
     return jsonify({
         "message": "Login successful",
         "fname": user["fname"],
